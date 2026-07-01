@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head><title>Dashboard - E-Procurement</title></head>
+<body>
+    <h1>Welcome, {{ user.full_name }}</h1>
+    <p>Role: {{ user.role }}</p>
+    <button onclick="logout()">Logout</button>
+    <script>
+        async function logout() {
+            await fetch('/api/auth/logout', {method: 'POST'});
+            window.location = '/login';
+        }
+    </script>
+</body>
+</html>
