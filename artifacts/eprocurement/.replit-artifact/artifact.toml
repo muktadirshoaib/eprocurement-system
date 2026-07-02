@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "E-Procurement System"
+version = "1.0.0"
+id = "artifacts/eprocurement"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18685
+
+[services.development]
+run = "pnpm --filter @workspace/eprocurement run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/eprocurement", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/eprocurement/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18685"
+BASE_PATH = "/"

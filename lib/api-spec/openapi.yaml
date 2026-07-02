@@ -3,20 +3,30 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: E-Procurement System API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication
+  - name: requisitions
+    description: Purchase requisitions
+  - name: users
+    description: User management
+  - name: notifications
+    description: Notifications
+  - name: dashboard
+    description: Dashboard statistics
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +34,685 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login with username and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUser"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUser"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /requisitions:
+    get:
+      operationId: listRequisitions
+      tags: [requisitions]
+      summary: List requisitions (role-filtered)
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: stage
+          in: query
+          schema:
+            type: ["integer", "null"]
+      responses:
+        "200":
+          description: List of requisitions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RequisitionSummary"
+    post:
+      operationId: createRequisition
+      tags: [requisitions]
+      summary: Create a new requisition
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequisitionInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequisitionDetail"
+
+  /requisitions/{id}:
+    get:
+      operationId: getRequisition
+      tags: [requisitions]
+      summary: Get requisition detail
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Requisition detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequisitionDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /requisitions/{id}/submit:
+    post:
+      operationId: submitRequisition
+      tags: [requisitions]
+      summary: Submit requisition for approval
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequisitionDetail"
+        "400":
+          description: Cannot submit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /requisitions/{id}/approve:
+    post:
+      operationId: approveRequisition
+      tags: [requisitions]
+      summary: Approve a requisition at current stage
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApprovalInput"
+      responses:
+        "200":
+          description: Approved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequisitionDetail"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /requisitions/{id}/reject:
+    post:
+      operationId: rejectRequisition
+      tags: [requisitions]
+      summary: Reject a requisition
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApprovalInput"
+      responses:
+        "200":
+          description: Rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequisitionDetail"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List users (admin only)
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+    post:
+      operationId: createUser
+      tags: [users]
+      summary: Create user (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /users/{id}:
+    put:
+      operationId: updateUser
+      tags: [users]
+      summary: Update user (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deactivateUser
+      tags: [users]
+      summary: Deactivate user (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deactivated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /notifications:
+    get:
+      operationId: listNotifications
+      tags: [notifications]
+      summary: Get notifications for current user
+      responses:
+        "200":
+          description: List of notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+
+  /notifications/{id}/read:
+    post:
+      operationId: markNotificationRead
+      tags: [notifications]
+      summary: Mark a notification as read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Marked read
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get dashboard statistics for current user
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/recent:
+    get:
+      operationId: getRecentRequisitions
+      tags: [dashboard]
+      summary: Get recent requisitions for dashboard
+      responses:
+        "200":
+          description: Recent requisitions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RequisitionSummary"
+
+  /dashboard/pending-approvals:
+    get:
+      operationId: getPendingApprovals
+      tags: [dashboard]
+      summary: Get requisitions pending approval for current approver
+      responses:
+        "200":
+          description: Pending approval requisitions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RequisitionSummary"
+
+  /dashboard/stage-breakdown:
+    get:
+      operationId: getStageBreakdown
+      tags: [dashboard]
+      summary: Get requisition counts broken down by stage
+      responses:
+        "200":
+          description: Stage breakdown
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StageCount"
+
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    MessageResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+
+    LoginInput:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+
+    AuthUser:
+      type: object
+      required: [id, username, fullName, role, department, approvalStage, isActive]
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        fullName:
+          type: string
+        role:
+          type: string
+        department:
+          type: string
+        approvalStage:
+          type: ["integer", "null"]
+        isActive:
+          type: boolean
+
+    User:
+      type: object
+      required: [id, username, fullName, role, department, approvalStage, isActive, createdAt]
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        fullName:
+          type: string
+        role:
+          type: string
+        department:
+          type: string
+        approvalStage:
+          type: ["integer", "null"]
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+
+    UserInput:
+      type: object
+      required: [username, password, fullName, role, department]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        fullName:
+          type: string
+        role:
+          type: string
+        department:
+          type: string
+        approvalStage:
+          type: ["integer", "null"]
+
+    UserUpdate:
+      type: object
+      properties:
+        fullName:
+          type: string
+        role:
+          type: string
+        department:
+          type: string
+        approvalStage:
+          type: ["integer", "null"]
+        isActive:
+          type: boolean
+        password:
+          type: string
+
+    LineItemInput:
+      type: object
+      required: [description, quantity, unitPrice, category]
+      properties:
+        description:
+          type: string
+        quantity:
+          type: number
+        unitPrice:
+          type: number
+        category:
+          type: string
+
+    LineItem:
+      type: object
+      required: [id, description, quantity, unitPrice, totalPrice, category]
+      properties:
+        id:
+          type: integer
+        description:
+          type: string
+        quantity:
+          type: number
+        unitPrice:
+          type: number
+        totalPrice:
+          type: number
+        category:
+          type: string
+
+    ApprovalRecord:
+      type: object
+      required: [id, approverName, stage, action, createdAt]
+      properties:
+        id:
+          type: integer
+        approverName:
+          type: string
+        stage:
+          type: integer
+        action:
+          type: string
+        comments:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    RequisitionInput:
+      type: object
+      required: [title, description, department, justification, lineItems]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        department:
+          type: string
+        isUrgent:
+          type: boolean
+        justification:
+          type: string
+        lineItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/LineItemInput"
+
+    RequisitionSummary:
+      type: object
+      required: [id, prfNumber, title, department, currentStage, status, isUrgent, totalAmount, createdAt, creatorName]
+      properties:
+        id:
+          type: integer
+        prfNumber:
+          type: string
+        title:
+          type: string
+        department:
+          type: string
+        currentStage:
+          type: ["integer", "null"]
+        status:
+          type: string
+        isUrgent:
+          type: boolean
+        totalAmount:
+          type: number
+        createdAt:
+          type: string
+        creatorName:
+          type: string
+
+    RequisitionDetail:
+      type: object
+      required: [id, prfNumber, title, description, department, currentStage, status, isUrgent, justification, totalAmount, createdAt, creatorName, lineItems, approvalHistory]
+      properties:
+        id:
+          type: integer
+        prfNumber:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        department:
+          type: string
+        currentStage:
+          type: ["integer", "null"]
+        status:
+          type: string
+        isUrgent:
+          type: boolean
+        justification:
+          type: string
+        totalAmount:
+          type: number
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        completedAt:
+          type: ["string", "null"]
+        creatorId:
+          type: integer
+        creatorName:
+          type: string
+        lineItems:
+          type: array
+          items:
+            $ref: "#/components/schemas/LineItem"
+        approvalHistory:
+          type: array
+          items:
+            $ref: "#/components/schemas/ApprovalRecord"
+
+    ApprovalInput:
+      type: object
+      properties:
+        comments:
+          type: string
+
+    Notification:
+      type: object
+      required: [id, title, message, notificationType, isRead, createdAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        message:
+          type: string
+        notificationType:
+          type: string
+        isRead:
+          type: boolean
+        relatedRequisitionId:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+
+    DashboardStats:
+      type: object
+      required: [total, draft, pending, approved, rejected, totalAmount]
+      properties:
+        total:
+          type: integer
+        draft:
+          type: integer
+        pending:
+          type: integer
+        approved:
+          type: integer
+        rejected:
+          type: integer
+        totalAmount:
+          type: number
+        unreadNotifications:
+          type: integer
+
+    StageCount:
+      type: object
+      required: [stage, stageName, count]
+      properties:
+        stage:
+          type: integer
+        stageName:
+          type: string
+        count:
+          type: integer

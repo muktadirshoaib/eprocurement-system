@@ -1,0 +1,2 @@
+- [E-Procurement system design](eprocurement-design.md) — full-stack procurement app: Express API + React/Vite frontend, PostgreSQL via Drizzle ORM.
+- [React Query 401 retry fix](react-query-401-retry.md) — QueryClient must be configured to not retry on 401/403 or auth pages show blank while retries run.

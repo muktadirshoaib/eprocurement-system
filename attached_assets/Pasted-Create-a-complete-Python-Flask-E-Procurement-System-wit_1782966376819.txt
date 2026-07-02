@@ -1,0 +1,78 @@
+Create a complete Python Flask E-Procurement System with these exact specifications:
+
+REQUIREMENTS:
+- Flask web app with SQLite database (auto-created on first run)
+- 7-stage approval workflow
+- Role-based access: basic_user, approver, admin
+- Default admin login: username "admin", password "admin123"
+- Works with: python app.py OR gunicorn app:app
+- Database path: ./eprocurement.db (same directory as app.py)
+- Session-based authentication using Flask session cookies
+
+FILE STRUCTURE:
+- app.py (main Flask app with ALL routes and API endpoints)
+- eprocurement/__init__.py
+- eprocurement/database.py (schema creation + default admin)
+- eprocurement/auth.py (bcrypt password hashing, sessions)
+- eprocurement/models/__init__.py
+- eprocurement/models/user.py
+- eprocurement/models/session.py
+- eprocurement/models/requisition.py
+- eprocurement/templates/login.html
+- eprocurement/templates/dashboard.html
+- eprocurement/templates/requisitions.html
+- eprocurement/templates/requisition_form.html
+- eprocurement/templates/requisition_detail.html
+- requirements.txt (flask, bcrypt, gunicorn)
+- Procfile (web: gunicorn app:app)
+- .gitignore
+
+CRITICAL RULES:
+1. Set os.environ['DB_PATH'] at TOP of app.py BEFORE any imports
+2. Call initialize_database() at MODULE LEVEL (not inside if __name__ == '__main__')
+3. Templates go in eprocurement/templates/ and app.py must set template_folder='eprocurement/templates'
+4. Login must work immediately with admin/admin123 on first run
+5. All HTML templates must use JavaScript fetch() to call /api/ endpoints
+6. Session stored in Flask session cookie (not just Authorization header)
+
+DATABASE TABLES (8):
+- users (user_id, username, password_hash, full_name, role, department, approval_stage, is_active, created_at, updated_at)
+- sessions (session_id, user_id, created_at, last_accessed, expires_at, ip_address)
+- requisitions (requisition_id, prf_number, creator_id, title, description, department, current_stage, status, is_urgent, justification, total_amount, created_at, updated_at, completed_at)
+- line_items (item_id, requisition_id, description, quantity, unit_price, total_price, category)
+- approval_records (record_id, requisition_id, approver_id, stage, action, comments, created_at)
+- vendor_quotes (quote_id, requisition_id, vendor_name, quote_amount, delivery_days, notes, is_selected, created_at)
+- notifications (notification_id, user_id, title, message, notification_type, is_read, related_requisition_id, created_at)
+- audit_logs (log_id, user_id, action, resource_type, resource_id, details, ip_address, created_at)
+
+API ENDPOINTS:
+- POST /api/auth/login (body: {username, password})
+- POST /api/auth/logout
+- GET /api/auth/me
+- GET /api/requisitions (role-filtered)
+- POST /api/requisitions (create with line_items array)
+- GET /api/requisitions/<id> (with line_items and approval_history)
+- POST /api/requisitions/<id>/submit
+- POST /api/requisitions/<id>/approve (body: {comments})
+- POST /api/requisitions/<id>/reject (body: {comments})
+- GET /api/users (admin only)
+- POST /api/users (admin only)
+- PUT /api/users/<id> (admin only)
+- DELETE /api/users/<id> (admin only - deactivate)
+- GET /api/notifications
+- GET /health
+
+WORKFLOW STAGES (1-7):
+Stage 1: Department Head ? Stage 2: Budget Review ? Stage 3: Procurement ? Stage 4: Compliance ? Stage 5: Finance ? Stage 6: Director ? Stage 7: Final Sign-off
+
+After stage 7 approval ? status = "approved", completed_at set.
+Rejection at any stage ? status = "rejected", notify creator.
+
+TEMPLATES MUST HAVE:
+- login.html: Professional login form, fetch /api/auth/login, redirect to /dashboard on success
+- dashboard.html: Show user info, stats (total/pending/approved/rejected counts), recent requisitions, notifications
+- requisitions.html: Table of all requisitions with status badges, filter by status, link to details
+- requisition_form.html: Form with title, description, department, urgent checkbox, justification, dynamic line items (add/remove rows with description, quantity, unit_price), auto-calculate totals
+- requisition_detail.html: Show full details, line items table, approval history timeline, approve/reject buttons (for approvers at correct stage), submit button (for creator if draft)
+
+Give me ALL files with COMPLETE content. No placeholders. No TODOs. Ready to run.
