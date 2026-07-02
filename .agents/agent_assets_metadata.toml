@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "WVnqN6Ia9rvRqp5C1rn0Y"
+uri = "file://eprocurement-project.tar.gz"
+type = "unspecified"
+title = "E-Procurement System — source archive"
