@@ -6,3 +6,9 @@ id = "WVnqN6Ia9rvRqp5C1rn0Y"
 uri = "file://eprocurement-project.tar.gz"
 type = "unspecified"
 title = "E-Procurement System — source archive"
+
+[[outputs]]
+id = "MN9TFuiwl0ihGrbwgCYTh"
+uri = "file://eprocurement-system.tar.gz"
+type = "unspecified"
+title = "eprocurement-system.tar.gz"
