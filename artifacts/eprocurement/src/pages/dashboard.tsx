@@ -60,7 +60,7 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-        <StatCard title="Total Spends" value={stats ? formatCurrency(stats.totalAmount) : "$0.00"} valueClass="text-primary" />
+        <StatCard title="Total Spends" value={stats ? formatCurrency(stats.totalAmount) : "৳0.00"} valueClass="text-primary" />
         <StatCard title="All Reqs" value={stats?.total || 0} />
         <StatCard title="Pending" value={stats?.pending || 0} valueClass="text-amber-600" />
         <StatCard title="Approved" value={stats?.approved || 0} valueClass="text-emerald-600" />

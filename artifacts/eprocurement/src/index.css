@@ -147,3 +147,23 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 }
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body,
+  #root {
+    background: #fff !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  @page {
+    margin: 14mm;
+  }
+}
+
+.print-only {
+  display: none;
+}

@@ -172,7 +172,7 @@ export default function NewRequisition() {
                   </div>
                   <div className="col-span-1 md:col-span-2 space-y-2 md:space-y-0 relative">
                     <Label className="md:hidden text-xs">Unit Price</Label>
-                    <span className="absolute left-3 top-2.5 text-muted-foreground hidden md:block">$</span>
+                    <span className="absolute left-3 top-2.5 text-muted-foreground hidden md:block">৳</span>
                     <Input type="number" min="0" step="0.01" {...form.register(`lineItems.${index}.unitPrice`)} className="text-right font-mono md:pl-7" />
                   </div>
                   <div className="col-span-1 flex justify-end md:justify-center mt-2 md:mt-0">

@@ -31,12 +31,12 @@ export function Shell({ children }: ShellProps) {
   }
 
   return (
-    <div className="flex h-screen w-full bg-background overflow-hidden selection:bg-primary selection:text-white">
-      <Sidebar user={user} />
-      <div className="flex-1 flex flex-col min-w-0">
-        <TopBar user={user} />
-        <main className="flex-1 overflow-y-auto p-8 relative">
-          <div className="max-w-6xl mx-auto">
+    <div className="flex h-screen w-full bg-background overflow-hidden selection:bg-primary selection:text-white print:h-auto print:block">
+      <Sidebar user={user} className="no-print" />
+      <div className="flex-1 flex flex-col min-w-0 print:block">
+        <TopBar user={user} className="no-print" />
+        <main className="flex-1 overflow-y-auto p-8 relative print:p-0 print:overflow-visible">
+          <div className="max-w-6xl mx-auto print:max-w-none">
             {children}
           </div>
         </main>
@@ -45,7 +45,7 @@ export function Shell({ children }: ShellProps) {
   );
 }
 
-function Sidebar({ user }: { user: any }) {
+function Sidebar({ user, className = "" }: { user: any; className?: string }) {
   const [location] = useLocation();
 
   const links = [
@@ -59,10 +59,10 @@ function Sidebar({ user }: { user: any }) {
   }
 
   return (
-    <aside className="w-64 bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border shrink-0">
+    <aside className={`w-64 bg-sidebar text-sidebar-foreground flex flex-col border-r border-sidebar-border shrink-0 ${className}`}>
       <div className="h-16 flex items-center px-6 border-b border-sidebar-border font-bold text-lg tracking-tight gap-2">
         <Briefcase className="w-5 h-5 text-amber-500" />
-        <span>E-Procure</span>
+        <span>Astha IT</span>
       </div>
       <div className="flex-1 py-6 px-4 space-y-1">
         {links.map((link) => {
@@ -77,13 +77,13 @@ function Sidebar({ user }: { user: any }) {
         })}
       </div>
       <div className="p-4 border-t border-sidebar-border text-xs text-sidebar-foreground/60">
-        E-Procurement System v1.0
+        Astha IT E-procurement Management System v1.0
       </div>
     </aside>
   );
 }
 
-function TopBar({ user }: { user: any }) {
+function TopBar({ user, className = "" }: { user: any; className?: string }) {
   const logout = useLogout();
   const [, setLocation] = useLocation();
 
@@ -94,7 +94,7 @@ function TopBar({ user }: { user: any }) {
   };
 
   return (
-    <header className="h-16 border-b bg-card flex items-center justify-between px-8 shrink-0">
+    <header className={`h-16 border-b bg-card flex items-center justify-between px-8 shrink-0 ${className}`}>
       <div className="flex items-center text-sm text-muted-foreground font-medium">
         {user?.department} Department
       </div>

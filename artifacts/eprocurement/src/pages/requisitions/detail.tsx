@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CheckCircle2, XCircle, Clock, AlertCircle, ArrowLeft } from "lucide-react";
+import { CheckCircle2, XCircle, Clock, AlertCircle, ArrowLeft, Printer } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
@@ -85,7 +85,7 @@ export default function RequisitionDetail() {
 
   return (
     <Shell>
-      <div className="mb-6">
+      <div className="no-print mb-6">
         <Link href="/requisitions" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground mb-4 transition-colors">
           <ArrowLeft className="w-4 h-4 mr-1" /> Back to Requisitions
         </Link>
@@ -102,7 +102,12 @@ export default function RequisitionDetail() {
             </div>
           </div>
           <div className="flex flex-col items-end gap-3">
-            <StatusBadge status={req.status} />
+            <div className="flex items-center gap-2">
+              <StatusBadge status={req.status} />
+              <Button variant="outline" size="sm" onClick={() => window.print()}>
+                <Printer className="w-4 h-4 mr-2" /> Print
+              </Button>
+            </div>
             {canSubmit && (
               <Button onClick={handleSubmit} disabled={submitMut.isPending} className="w-full">
                 {submitMut.isPending ? "Submitting..." : "Submit for Approval"}
@@ -120,7 +125,7 @@ export default function RequisitionDetail() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="no-print grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           <Card>
@@ -227,6 +232,90 @@ export default function RequisitionDetail() {
               </div>
             </CardContent>
           </Card>
+        </div>
+      </div>
+
+      {/* Printable document — hidden on screen, shown only when printing */}
+      <div className="print-only p-8 text-black">
+        <div className="flex items-center justify-between border-b-2 border-black pb-4 mb-6">
+          <div>
+            <div className="text-2xl font-bold tracking-tight">Astha IT</div>
+            <div className="text-sm">E-procurement Management System</div>
+          </div>
+          <div className="text-right">
+            <div className="text-lg font-bold">Purchase Requisition</div>
+            <div className="font-mono text-sm">{req.prfNumber}</div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
+          <div><span className="font-semibold">Title:</span> {req.title}</div>
+          <div><span className="font-semibold">Status:</span> {req.status.toUpperCase()}</div>
+          <div><span className="font-semibold">Requested by:</span> {req.creatorName}</div>
+          <div><span className="font-semibold">Department:</span> {req.department}</div>
+          <div><span className="font-semibold">Date:</span> {formatDate(req.createdAt)}</div>
+          <div><span className="font-semibold">Urgent:</span> {req.isUrgent ? "Yes" : "No"}</div>
+        </div>
+
+        <div className="mb-6 text-sm">
+          <div className="font-semibold mb-1">Description</div>
+          <p>{req.description || "N/A"}</p>
+        </div>
+
+        <div className="mb-6 text-sm">
+          <div className="font-semibold mb-1">Business Justification</div>
+          <p>{req.justification}</p>
+        </div>
+
+        <table className="w-full text-sm border-collapse mb-2">
+          <thead>
+            <tr className="border-b-2 border-black">
+              <th className="text-left py-1">Description</th>
+              <th className="text-left py-1">Category</th>
+              <th className="text-right py-1">Qty</th>
+              <th className="text-right py-1">Unit Price</th>
+              <th className="text-right py-1">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {req.lineItems.map((item) => (
+              <tr key={item.id} className="border-b border-gray-400">
+                <td className="py-1">{item.description}</td>
+                <td className="py-1">{item.category}</td>
+                <td className="text-right py-1">{item.quantity}</td>
+                <td className="text-right py-1">{formatCurrency(item.unitPrice)}</td>
+                <td className="text-right py-1">{formatCurrency(item.totalPrice)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div className="text-right font-bold text-base mb-10">
+          Grand Total: {formatCurrency(req.totalAmount)}
+        </div>
+
+        <div className="font-semibold mb-3 text-sm">Approval Chain</div>
+        <div className="grid grid-cols-2 gap-x-8 gap-y-6">
+          {STAGES.map((stageName, idx) => {
+            const stageNum = idx + 1;
+            const record = req.approvalHistory.find(h => h.stage === stageNum);
+            return (
+              <div key={stageNum} className="text-sm">
+                <div className="text-xs text-gray-600 mb-1">{stageNum}. {stageName}</div>
+                {record ? (
+                  <div>
+                    <div className="font-medium">{record.approverName}</div>
+                    <div className="text-xs">{record.action === 'approved' ? 'Approved' : 'Rejected'} — {formatDate(record.createdAt)}</div>
+                  </div>
+                ) : (
+                  <div className="border-b border-black pt-6" />
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="mt-10 text-[10px] text-gray-500 text-center">
+          Generated by Astha IT E-procurement Management System on {formatDate(new Date().toISOString())}
         </div>
       </div>
 
